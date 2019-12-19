@@ -33,7 +33,7 @@ No need to escape directories with spaces
 
 ```bash
 username@~$ cd dir1/dir2/Fun Stuff/December 2019
-username@~/dir1/dir2/Fun Stuff/December 2019$ 
+username@~/dir1/dir2/Fun Stuff/December 2019$ ls
 ```
 
 Conflicts are resolved by frequency of access
