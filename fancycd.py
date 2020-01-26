@@ -46,6 +46,47 @@ def emit(path): # can either chdir or print the path
 def sanitize(path):
     return os.path.abspath(os.path.expanduser(path))
 
+def load_cache(cache_file):
+    try:
+        with open(cache_file, 'r+') as f:
+            d = json.load(f, object_hook=from_json)
+            cache = defaultdict(Counter, {k: Counter(v) for k, v in d.items()})
+    except FileNotFoundError:
+        cache = defaultdict(Counter)
+    
+    return cache
+
+def complete_path(directory, cache):
+    """
+        finds a matching full directory in cache matching the partial name directory
+
+        directory (string) -- partial name
+        cache (default dict of Counters) -- used for storing historic data
+
+        returns: 
+            updated cache
+    """
+
+    if directory in cache.keys():
+        basename = os.path.basename(directory)
+        
+        if len(cache[directory]) == 0:
+            raise FileNotFoundError('Directory {} does not exist.'.format(directory))
+
+        fullpath = cache[directory].most_common(1)[0][0]
+
+        cache[basename].update([fullpath])
+
+        if not os.path.exists(fullpath) or not os.path.isdir(fullpath):
+            del cache[basename][fullpath]
+            return complete_path(directory, cache)
+
+        emit(fullpath)
+
+        return cache
+    else:
+        raise FileNotFoundError('Directory {} does not exist.'.format(directory))
+
 def main():
     cache_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cache.json')
 
@@ -61,14 +102,7 @@ def main():
     args = parser.parse_args(args[1:])
     directory = args.directory[0]
 
-    # print(directory, args.directory)
-    
-    try:
-        with open(cache_file, 'r+') as f:
-            d = json.load(f, object_hook = from_json)
-            cache = defaultdict(Counter, {k : Counter(v) for k, v in d.items()})
-    except FileNotFoundError:
-        cache = defaultdict(Counter)
+    cache = load_cache(cache_file)
 
     # list of directories with name and counts. when a new directory is accessed increment the count, keep it sorted.
     if os.path.exists(directory) and os.path.isdir(directory):
@@ -83,21 +117,10 @@ def main():
 
         return
 
-    if directory in cache.keys():
-        basename = os.path.basename(directory)
-        fullpath = cache[directory].most_common(1)[0][0]
+    cache = complete_path(directory, cache)
 
-        cache[basename].update([fullpath])
-
-        emit(fullpath)
-
-        with open(cache_file, 'w+') as f:
-            json.dump(dict(cache), f, cls = MyEncoder)
-
-        # print('changed directory to {}'.format(fullpath))
-        return
-    else:
-        raise FileNotFoundError('Directory {} does not exist'.format(directory))
+    with open(cache_file, 'w+') as f:
+        json.dump(dict(cache), f, cls=MyEncoder)
 
 if __name__ == '__main__':
     main()
