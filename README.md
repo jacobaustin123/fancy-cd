@@ -49,3 +49,6 @@ username@:~$ cd Documents
 username@:~/Documents$ cd ..
 ```
 
+## Issues
+
+Since this script uses Python, some conflicts can arise with inconveniently named files in the current directory. These can include things like `io.py`. If issues are encountered, just escape the alias using `\cd [dirname]`.
