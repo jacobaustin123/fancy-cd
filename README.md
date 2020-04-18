@@ -7,7 +7,7 @@ fancy-cd is a fancy version of the default Bash cd command that allows you to ju
 Run the following commands to install this utility. You can also use the `install.sh` script. This will override the default cd command with this script. You can uninstall by removing the added lines from your `.bash_profile`. 
 
 ```bash
-git clone https://github.com/jacobaustin/fancy-cd.git ~/Documents/fancy-cd/
+git clone https://github.com/jacobaustin123/fancy-cd.git ~/Documents/fancy-cd/
 cat >> ~/.bash_profile <<'EOF'
 fancycd() {
     cd "$(python ~/Documents/fancy-cd/fancycd.py "$*")"
